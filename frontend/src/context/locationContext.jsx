@@ -1,18 +1,21 @@
-import { createContext, useContext, useEffect, useState } from "react";
-
-const LocationContext = createContext({
-  location: null,
-  loading: true,
-  error: null,
-  setLocation: () => {},
-});
+import { useEffect, useState } from "react";
+import { LocationContext } from "./LocationContext";
 
 export const LocationProvider = ({ children }) => {
   const [location, setLocation] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => {
+    // Initialize loading state based on geolocation availability
+    return "geolocation" in navigator;
+  });
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
+
+    if (!("geolocation" in navigator)) {
+      return;
+    }
+
     const fetchLocationData = async (lat, lon) => {
       try {
         const res = await fetch(
@@ -22,18 +25,14 @@ export const LocationProvider = ({ children }) => {
         const userLocation =
           data?.address?.state || data?.address?.city || data?.display_name;
         setLocation(userLocation || null);
-      } catch (err) {
-        setError("Failed to fetch location data");
+      } catch {
+        if (isMounted) {
+          setError("Failed to fetch location data");
+        }
       } finally {
         setLoading(false);
       }
     };
-
-    if (!("geolocation" in navigator)) {
-      setError("Geolocation not supported");
-      setLoading(false);
-      return;
-    }
 
     const success = (position) => {
       const { latitude, longitude } = position.coords;
@@ -41,12 +40,18 @@ export const LocationProvider = ({ children }) => {
     };
 
     const fail = () => {
-      setError("Unable to retrieve your location");
-      setLocation(null);
-      setLoading(false);
+      if (isMounted) {
+        setError("Unable to retrieve your location");
+        setLocation(null);
+        setLoading(false);
+      }
     };
 
     navigator.geolocation.getCurrentPosition(success, fail);
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (
@@ -54,12 +59,4 @@ export const LocationProvider = ({ children }) => {
       {children}
     </LocationContext.Provider>
   );
-};
-
-export const useeLocation = () => {
-  const context = useContext(LocationContext);
-  if (!context) {
-    throw new Error("useLocation must be used within LocationProvider");
-  }
-  return context;
 };

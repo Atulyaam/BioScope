@@ -1,15 +1,15 @@
-import { FaLocationArrow, FaSearch } from "react-icons/fa";
+import { FaSearch } from "react-icons/fa";
 import FullLogo from "../../assets/FullLogo.png";
 import { useState } from "react";
-import { useeLocation } from "../../context/locationContext.jsx"
+import { useLocation } from "../../hooks/useLocation";
 
-import pinIcon from "../../assets/pin.gif"
+import pinIcon from "../../assets/pin.gif";
 
 const Header = () => {
   const [activeNav, setActiveNav] = useState("Movie");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { location, error, loading } = useeLocation()
+  const { location, loading } = useLocation();
 
   const navItems = ["Movie", "Stream", "Events", "Plays", "Sports"];
   const bottomNavItems = [
@@ -24,9 +24,9 @@ const Header = () => {
       {/* Top Navigation Bar */}
       <div className="border-b border-gray-200 shadow-sm">
         <div className="px-4 md:px-8 py-4">
-          <div className="max-w-screen-xl mx-auto flex justify-between items-center gap-4">
+          <div className="max-w-7xl mx-auto flex justify-between items-center gap-4">
             {/* Logo Section */}
-            <div className="flex items-center gap-3 flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity">
+            <div className="flex items-center gap-3 shrink-0 cursor-pointer hover:opacity-90 transition-opacity">
               <img
                 src={FullLogo}
                 alt="BioScope Logo"
@@ -52,10 +52,14 @@ const Header = () => {
             </div>
 
             {/* Right Section */}
-            <div className="flex items-center gap-3 flex-shrink-0">
+            <div className="flex items-center gap-3 shrink-0">
               {/* Location */}
               <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-                <img src={pinIcon} alt="location pin" className="h-5 w-5 object-contain" />
+                <img
+                  src={pinIcon}
+                  alt="location pin"
+                  className="h-5 w-5 object-contain"
+                />
                 <span className="text-sm font-medium text-gray-700">
                   {loading ? "Locating..." : location || "Set Location"}
                 </span>
@@ -71,9 +75,9 @@ const Header = () => {
       </div>
 
       {/* Bottom Navigation Bar */}
-      <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+      <div className="bg-linear-to-r from-gray-50 to-gray-100 border-b border-gray-200">
         <div className="px-4 md:px-8">
-          <div className="max-w-screen-xl mx-auto flex justify-between items-center">
+          <div className="max-w-7xl mx-auto flex justify-between items-center">
             {/* Main Categories */}
             <div className="flex items-center">
               {navItems.map((item) => (

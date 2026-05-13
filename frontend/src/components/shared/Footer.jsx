@@ -29,7 +29,7 @@ const Footer = () => {
       <div className="border-t border-gray-700">
         {/* Main Footer Content */}
         <div className="px-4 md:px-8 py-12">
-          <div className="max-w-screen-xl mx-auto">
+          <div className="max-w-7xl mx-auto">
             {/* Top Section - Logo and Social */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
               {/* Logo Section */}
