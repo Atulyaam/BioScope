@@ -4,8 +4,8 @@ import { movies } from '../../utils/constant'
 
 const Reccommended = () => {
   return (
-    <div className='w-full py-6 bg-white'>
-      <div className='max-w-screen-xl mx-auto px-4'>
+    <div className='w-full py-8 bg-white'>
+      <div className='max-w-7xl mx-auto px-4 md:px-8'>
         <div className='items-center flex justify-between mb-4'>
           <h2 className='text-2xl font-semibold'>Recommended Movies</h2>
           <span className='text-md text-red-500 cursor-pointer hover:underline font-medium'>

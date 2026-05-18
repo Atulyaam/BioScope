@@ -3,8 +3,8 @@ import { events } from '../../utils/constant'
 
 const LiveEvents = () => {
   return (
-    <div 
-    className='max-w-screen-xl mx-auto p-4 py-10'>
+    <div className='w-full bg-white py-8'>
+      <div className='max-w-7xl mx-auto px-4 md:px-8'>
       <h2 
       className='text-2xl font-semibold mb-6'>The Best Of Live Events</h2>
       <div
@@ -24,6 +24,7 @@ const LiveEvents = () => {
           ))
         }
 
+      </div>
       </div>
     </div>
   )
