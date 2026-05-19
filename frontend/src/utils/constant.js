@@ -41,6 +41,19 @@ export const languages = [
   "Kanada",
 ];
 
+export const filters = [
+  "Hindi",
+  "English",
+  "Tamil",
+  "Telugu",
+  "2D",
+  "3D",
+  "IMAX",
+  "4DX",
+  "Dolby",
+];
+
+
 export const banners = [banner1, banner2, banner3, banner4];
 
 export const movies = [
