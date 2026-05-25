@@ -3,22 +3,93 @@ import { languages } from '../../utils/constant'
 
 const genres = [
   'Action', 'Drama', 'Comedy', 'Thriller', 'Horror',
-  'Romance', 'Sci-Fi', 'Animation', 'Adventure', 'Fantasy'
+  'Romance', 'Sci-Fi', 'Animation', 'Adventure', 'Fantasy',
 ]
 
 const formats = ['2D', '3D', 'IMAX', '4DX', 'Dolby']
+
+// ⚠️ Must be defined OUTSIDE MovieFilters — defining it inside causes React to
+// unmount + remount it on every state change, breaking all click handlers.
+const FilterSection = ({ title, items, selected, onToggle, onClear }) => (
+  <div className='bg-white p-4 rounded-md mb-3 shadow-sm'>
+    <div className='flex justify-between items-center mb-3'>
+      <span className='font-semibold'>{title}</span>
+      {selected.length > 0 && (
+        <button
+          onClick={onClear}
+          className='text-[#f74362] text-xs font-medium hover:underline'
+        >
+          Clear
+        </button>
+      )}
+    </div>
+    <div className='flex flex-wrap gap-2'>
+      {items.map((item) => (
+        <span
+          key={item}
+          onClick={() => onToggle(item)}
+          className={`px-3 py-1 text-sm rounded-full border cursor-pointer transition-all duration-200 ${
+            selected.includes(item)
+              ? 'bg-[#f74362] text-white border-[#f74362]'
+              : 'border-gray-300 text-[#f74362] hover:border-[#f74362] hover:text-gray-700'
+          }`}
+        >
+          {item}
+        </span>
+      ))}
+    </div>
+  </div>
+)
 
 function MovieFilters({ onFilterChange }) {
   const [selectedLanguages, setSelectedLanguages] = useState([])
   const [selectedGenres, setSelectedGenres] = useState([])
   const [selectedFormats, setSelectedFormats] = useState([])
 
-  const toggle = (value, list, setList) => {
-    const updated = list.includes(value)
-      ? list.filter((v) => v !== value)
-      : [...list, value]
-    setList(updated)
-    if (onFilterChange) onFilterChange({ languages: selectedLanguages, genres: selectedGenres, formats: selectedFormats })
+  // Always passes the freshly computed arrays — never stale state
+  const notify = (newLanguages, newGenres, newFormats) => {
+    if (onFilterChange) {
+      onFilterChange({ languages: newLanguages, genres: newGenres, formats: newFormats })
+    }
+  }
+
+  const toggleLanguage = (value) => {
+    const updated = selectedLanguages.includes(value)
+      ? selectedLanguages.filter((v) => v !== value)
+      : [...selectedLanguages, value]
+    setSelectedLanguages(updated)
+    notify(updated, selectedGenres, selectedFormats)
+  }
+
+  const toggleGenre = (value) => {
+    const updated = selectedGenres.includes(value)
+      ? selectedGenres.filter((v) => v !== value)
+      : [...selectedGenres, value]
+    setSelectedGenres(updated)
+    notify(selectedLanguages, updated, selectedFormats)
+  }
+
+  const toggleFormat = (value) => {
+    const updated = selectedFormats.includes(value)
+      ? selectedFormats.filter((v) => v !== value)
+      : [...selectedFormats, value]
+    setSelectedFormats(updated)
+    notify(selectedLanguages, selectedGenres, updated)
+  }
+
+  const clearLanguages = () => {
+    setSelectedLanguages([])
+    notify([], selectedGenres, selectedFormats)
+  }
+
+  const clearGenres = () => {
+    setSelectedGenres([])
+    notify(selectedLanguages, [], selectedFormats)
+  }
+
+  const clearFormats = () => {
+    setSelectedFormats([])
+    notify(selectedLanguages, selectedGenres, [])
   }
 
   const clearAll = () => {
@@ -28,42 +99,20 @@ function MovieFilters({ onFilterChange }) {
     if (onFilterChange) onFilterChange({ languages: [], genres: [], formats: [] })
   }
 
-  const FilterSection = ({ title, items, selected, onToggle, onClear }) => (
-    <div className='bg-white p-4 rounded-md mb-3 shadow-sm'>
-      <div className='flex justify-between items-center mb-3'>
-        <span className='font-semibold '>{title}</span>
-        {selected.length > 0 && (
-          <button onClick={onClear} className='text-[#f74362] text-xs font-medium hover:underline'>
-            Clear
-          </button>
-        )}
-      </div>
-      <div className='flex flex-wrap gap-2'>
-        {items.map((item) => (
-          <span
-            key={item}
-            onClick={() => onToggle(item)}
-            className={`px-3 py-1 text-sm rounded-full border cursor-pointer transition-all duration-200 ${
-              selected.includes(item)
-                ? 'bg-[#f74362] text-white border-[#f74362]'
-                : 'border-gray-300 text-[#f74362] hover:border-[#f74362] hover:text-gray-700'
-            }`}
-          >
-            {item}
-          </span>
-        ))}
-      </div>
-    </div>
-  )
-
-  const hasAnyFilter = selectedLanguages.length > 0 || selectedGenres.length > 0 || selectedFormats.length > 0
+  const hasAnyFilter =
+    selectedLanguages.length > 0 ||
+    selectedGenres.length > 0 ||
+    selectedFormats.length > 0
 
   return (
     <div className='w-full md:w-1/4 p-4 space-y-1'>
       <div className='flex justify-between items-center mb-3'>
         <h2 className='text-xl font-bold text-gray-900'>Filters</h2>
         {hasAnyFilter && (
-          <button onClick={clearAll} className='text-[#f74362] text-sm font-medium hover:underline'>
+          <button
+            onClick={clearAll}
+            className='text-[#f74362] text-sm font-medium hover:underline'
+          >
             Clear All
           </button>
         )}
@@ -73,31 +122,25 @@ function MovieFilters({ onFilterChange }) {
         title='Languages'
         items={languages}
         selected={selectedLanguages}
-        onToggle={(v) => toggle(v, selectedLanguages, setSelectedLanguages)}
-        onClear={() => setSelectedLanguages([])}
+        onToggle={toggleLanguage}
+        onClear={clearLanguages}
       />
 
       <FilterSection
         title='Genres'
         items={genres}
         selected={selectedGenres}
-        onToggle={(v) => toggle(v, selectedGenres, setSelectedGenres)}
-        onClear={() => setSelectedGenres([])}
+        onToggle={toggleGenre}
+        onClear={clearGenres}
       />
 
       <FilterSection
         title='Formats'
         items={formats}
         selected={selectedFormats}
-        onToggle={(v) => toggle(v, selectedFormats, setSelectedFormats)}
-        onClear={() => setSelectedFormats([])}
+        onToggle={toggleFormat}
+        onClear={clearFormats}
       />
-
-
-
-      <div>
-        
-      </div>
     </div>
   )
 }
