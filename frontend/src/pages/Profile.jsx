@@ -1,27 +1,35 @@
-import React from 'react'
-import { tabs } from '../utils/constant';
-import { IoMdAdd } from 'react-icons/io';
-import { IoLogOut } from 'react-icons/io5';
-import { FiEdit } from 'react-icons/fi';
+import React from "react";
+import { tabs } from "../utils/constant";
+import { IoMdAdd } from "react-icons/io";
+import { IoLogOut } from "react-icons/io5";
+import { FiEdit } from "react-icons/fi";
+import BookingHistory from "../components/profile/BookingHistory";
 
 const Profile = () => {
-  const [activeTab,setActiveTab] = React.useState("Profile")
+  const [activeTab, setActiveTab] = React.useState("Profile");
   return (
     <>
       <div className="bg-[#e5e5e5]">
         <div className="max-w-7xl mx-auto flex flex-wrap gap-6 py-2 text-sm font-medium">
-          {tabs.map((tab) => {
+          {tabs.map((tab) => (
             <button
-              className={`pb-1 cursor-pointer ${activeTab === tab ? "text-[#f74565]" : "text-gray-600 hover:text-black"}`}
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`pb-1 cursor-pointer ${
+                activeTab === tab
+                  ? "text-[#f74565]"
+                  : "text-gray-600 hover:text-black"
+              }`}
             >
               {tab}
-            </button>;
-          })}
+            </button>
+          ))}
         </div>
       </div>
 
       <div className="min-h-screen py-10 px-4 bg-gray-100">
         <div className="max-w-6xl mx-auto">
+          {/* Profile Section */}
           {activeTab === "Profile" && (
             <>
               {/* Header */}
@@ -129,10 +137,13 @@ const Profile = () => {
               </div>
             </>
           )}
+
+          {/* Booking Section */}
+          {activeTab === "Your Orders" && <BookingHistory />}
         </div>
       </div>
     </>
   );
-}
+};
 
-export default Profile
+export default Profile;

@@ -53,7 +53,6 @@ export const filters = [
   "Dolby",
 ];
 
-
 export const banners = [banner1, banner2, banner3, banner4];
 
 export const movies = [
@@ -399,7 +398,7 @@ export const ordersData = [
   },
 ];
 
-export const tabs = ["profile", "booking"];
+export const tabs = ["Profile", "Your Orders"];
 
 export const countryCodes = [
   { name: "India", code: "IN", dial_code: "+91" },

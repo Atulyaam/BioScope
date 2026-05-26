@@ -29,7 +29,7 @@ const BannerSlider = () => {
               <img
                 src={banner}
                 alt={`banner-${i + 1}`}
-                className="w-full h-[300px] rounded-xl object-cover"
+                className="w-full h-75 rounded-xl object-cover"
               />
             </SwiperSlide>
           ))}
