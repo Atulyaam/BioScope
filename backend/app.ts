@@ -3,6 +3,7 @@ import express from "express"
 import cors from "cors";
 import cookieParser from "cookie-parser"
 import globalRouter from "./routes";
+import { globalErrorHandler } from "./middlewares/error.middleware";
 
 
 
@@ -26,6 +27,7 @@ app.use(express.json());
 app.use("/api/v1/",globalRouter)
 
 // Global error handelers
+app.use(globalErrorHandler)
 
 app.get("/",(_,res)=>{
    res.json({
