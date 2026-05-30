@@ -7,7 +7,10 @@
     "dev": "ts-node-dev --respawn --transpile-only server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "seed:theater": "ts-node scripts/seed-theater.ts",
+    "seed:movies": "ts-node scripts/seed-movies.ts",
+    "seed:shows": "ts-node scripts/seed-show.ts"
   },
   "keywords": [],
   "author": "",
