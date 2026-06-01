@@ -48,9 +48,12 @@ export const getTopRecommendedMovies = async (
   next: NextFunction,
 ) => {
   try {
+   console.log("[ROUTE HIT] GET /api/v1/movies/recommended");
    const topMovie = await MovieService.getTopMovieByVotes(5);
+   console.log("[SUCCESS] Recommended movies fetched:", topMovie?.length ?? topMovie);
    res.status(200).json({topMovie})
   } catch (error) {
+   console.error("[ERROR] getTopRecommendedMovies failed:", error);
    next(error)
   }
 };

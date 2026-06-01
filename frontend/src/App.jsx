@@ -18,7 +18,11 @@ function App() {
             <Route path="/profile/:id" element={<h1>profile page</h1>}></Route>
 
             <Route path="/movies" element={<Movies></Movies>}></Route>
-            <Route path="/movies/:movieId" element={<MovieDetail/>}>Movie Detail Page</Route>
+
+
+            <Route path="/movies/:state/:movieName/:id/ticket" element={<MovieDetail/>}>Movie Detail Page</Route>
+
+
             <Route path="/profile" element={<Profile></Profile>}></Route>
           </Routes>
           <Footer></Footer>

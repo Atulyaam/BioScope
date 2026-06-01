@@ -46,6 +46,6 @@
     // my config
     "esModuleInterop": true
   },
-  "include": ["**/*.ts"],
+  "include": ["**/*.ts", "apis/index.js"],
   "exclude": ["node_modules", "dist"]
 }

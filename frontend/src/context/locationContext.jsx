@@ -41,9 +41,22 @@ export const LocationProvider = ({ children }) => {
 
     const fail = () => {
       if (isMounted) {
-        setError("Unable to retrieve your location");
-        setLocation(null);
-        setLoading(false);
+        setError("Unable to retrieve your location via browser geolocation");
+        // Try IP-based fallback to improve UX when users deny permission
+        (async () => {
+          try {
+            const res = await fetch("https://ipapi.co/json/");
+            const data = await res.json();
+            const ipLocation = data.region || data.city || data.country_name;
+            setLocation(ipLocation || null);
+            setError(null);
+          } catch (ipErr) {
+            setLocation(null);
+            setError("Unable to detect location");
+          } finally {
+            setLoading(false);
+          }
+        })();
       }
     };
 
