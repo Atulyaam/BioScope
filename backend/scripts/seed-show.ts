@@ -25,63 +25,58 @@ const fixedTimeSlots = [
   { start: "10:30 PM", end: "01:00 AM" },
 ];
 
-const toDateWithTime = (baseDate: Date, timeStr: string) => {
-  return dayjs(baseDate)
-    .hour(dayjs(timeStr, ["hh:mm A"]).hour())
-    .minute(dayjs(timeStr, ["hh:mm A"]).minute())
-    .second(0)
-    .toDate();
-};
 
 export const seedShow = async () => {
-  const movieTitles = ["Maa", "Kannappa", "Sitaare Zameen Par"];
-  const movies = await MovieModel.find({ title: { $in: movieTitles } });
+  // Seed shows for ALL movies in the DB
+  const movies = await MovieModel.find({});
+  // Seed shows for all Maharashtra theatres
   const theatres = await TheaterModel.find({ state: "Maharashtra" });
 
-  if (movies.length !== movieTitles.length || !theatres.length) {
-    console.error(
-      "Movies or theatres not found. Please check seeded titles or state name.",
-    );
+  if (!movies.length) {
+    console.error("No movies found. Run seed-movies first.");
     return;
   }
+  if (!theatres.length) {
+    console.error("No theatres found for Maharashtra. Run seed-theater first.");
+    return;
+  }
+
+  console.log(`🎬 Seeding shows for ${movies.length} movies across ${theatres.length} Maharashtra theatres...`);
 
   const today = dayjs().startOf("day");
 
   for (const movie of movies) {
     for (const theatre of theatres) {
-      for (let d = 0; d < 2; d++) {
-        // ✅ today and tomorrow
+      for (let d = 0; d < 7; d++) {
+        // ✅ today through next 6 days (7 total)
         const showDate = today.add(d, "day");
         const formattedDate = showDate.format("DD-MM-YYYY");
-        const numShows = Math.floor(Math.random() * 3) + 2; // 2–4 shows
+        const numShows = Math.floor(Math.random() * 3) + 2; // 2–4 shows per day
         const selectedSlots = fixedTimeSlots.slice(0, numShows);
 
         for (const slot of selectedSlots) {
-          const startTime = toDateWithTime(showDate.toDate(), slot.start);
-          const endTime = toDateWithTime(showDate.toDate(), slot.end);
-
           const newShow = new ShowModel({
             movie: movie._id,
             theater: theatre._id,
-            location: theatre.state,
+            location: theatre.state,  // "Maharashtra"
             formate: formats[Math.floor(Math.random() * formats.length)],
             audioType: "Dolby 7.1",
             startTime: slot.start,
-            date: formattedDate, // ✅ "DD-MM-YYYY"
+            date: formattedDate, // "DD-MM-YYYY"
             priceMap: generatePriceMap(),
             seatLayout: generateSeatLayout(),
           });
 
           await newShow.save();
           console.log(
-            `🎬 Show created for ${movie.title} at ${theatre.name} on ${formattedDate} (${slot.start} - ${slot.end})`,
+            `✅ ${movie.title} | ${theatre.name} | ${formattedDate} | ${slot.start}`,
           );
         }
       }
     }
   }
 
-  console.log("✅ Show seeding completed for selected movies in Maharashtra.");
+  console.log("✅ Show seeding completed for ALL movies in Maharashtra.");
 };
 
 mongoose

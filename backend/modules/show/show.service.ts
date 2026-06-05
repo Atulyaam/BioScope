@@ -1,12 +1,14 @@
 import { Types } from 'mongoose';
 import { generateSeatLayout, groupShowsByTheaterAndMovie } from './../../utils/index';
-
+import { TheaterModel } from '../theater/theater.model';
 import { IShow } from "./show.interface";
 import { showModel } from './show.model';
 // 1. createShow
 
 export const createShow = async (showData:IShow)=>{
-   const seatLayout = generateSeatLayout();
+   // Fetch the theater to get its unique seat layout config
+   const theater = await TheaterModel.findById(showData.theater);
+   const seatLayout = generateSeatLayout(theater?.seatLayoutConfig as any);
    const showToCreate = {...showData,seatLayout};
 
    return await showModel.create(showToCreate as IShow)
@@ -22,9 +24,14 @@ export const getShowsByMovieDateAndLocation = async(movieId:string,date:string,l
    if(date){
       query.date = date
    }
+
+   console.log("[ShowService] Query:", JSON.stringify(query, null, 2));
+
    const shows = await showModel.find(query)
    .populate("movie theater")
    .sort({startTime:1})
+
+   console.log(`[ShowService] Found ${shows.length} shows for movieId=${movieId}, location="${location}", date="${date}"`);
 
    const groupedShow = groupShowsByTheaterAndMovie(shows);
    return groupedShow

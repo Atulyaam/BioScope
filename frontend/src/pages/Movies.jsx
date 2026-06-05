@@ -1,47 +1,78 @@
-import React, { useState } from 'react'
+import { useState, useMemo } from 'react'
 import BannerSlider from '../components/shared/BannerSlider'
 import MovieFilters from '../components/Movies/MovieFilters'
 import MovieList from '../components/Movies/MovieList'
 import { allMovies } from '../utils/constant'
+import { getAllMovies } from '../apis'
+import { useQuery, keepPreviousData } from '@tanstack/react-query'
 
 const Movies = () => {
-  const [filteredMovies, setFilteredMovies] = useState(allMovies)
+  const [activeFilters, setActiveFilters] = useState({ languages: [], genres: [], formats: [] })
+
+  // ✅ Fetch real movies from the API; fall back to static data if API fails
+  const { data: apiResponse, isError } = useQuery({
+    queryKey: ['allMovies'],
+    queryFn: async () => await getAllMovies(),
+    placeholderData: keepPreviousData,
+  })
+
+  if (isError) {
+    console.warn('[Movies] API failed — using static fallback data')
+  }
+
+  // API returns { movies: [...] }, each with _id, title, posterUrl, genre[], language[], etc.
+  const baseMovies = useMemo(() => {
+    const apiMovies = apiResponse?.data?.movies
+    if (Array.isArray(apiMovies) && apiMovies.length > 0) {
+      return apiMovies
+    }
+    return allMovies // static fallback
+  }, [apiResponse])
 
   const handleFilterChange = ({ languages, genres, formats }) => {
+    setActiveFilters({ languages, genres, formats })
+  }
+
+  const filteredMovies = useMemo(() => {
+    const { languages, genres, formats } = activeFilters
     const hasLanguage = languages.length > 0
     const hasGenre = genres.length > 0
     const hasFormat = formats.length > 0
 
-    if (!hasLanguage && !hasGenre && !hasFormat) {
-      setFilteredMovies(allMovies)
-      return
-    }
+    if (!hasLanguage && !hasGenre && !hasFormat) return baseMovies
 
-    const result = allMovies.filter((movie) => {
+    return baseMovies.filter((movie) => {
       // ── Language ──────────────────────────────────────────────────────────
-      // movie.languages is "English, Hindi, Tamil, Telugu"
-      const movieLanguages = movie.languages
-        ? movie.languages.split(',').map((l) => l.trim().toLowerCase())
-        : []
+      // API movies have language as string[], static have it as comma string
+      const rawLangs = Array.isArray(movie.language)
+        ? movie.language
+        : Array.isArray(movie.languages)
+          ? movie.languages
+          : typeof movie.languages === 'string'
+            ? movie.languages.split(',').map((l) => l.trim())
+            : []
+      const movieLangs = rawLangs.map((l) => l.toLowerCase())
       const languageMatch =
-        !hasLanguage ||
-        languages.some((lang) => movieLanguages.includes(lang.toLowerCase()))
+        !hasLanguage || languages.some((lang) => movieLangs.includes(lang.toLowerCase()))
 
       // ── Genre ─────────────────────────────────────────────────────────────
-      // movie.genre is "Action/Drama/Sports"
-      const movieGenres = movie.genre
-        ? movie.genre.split('/').map((g) => g.trim().toLowerCase())
-        : []
+      // API: genre is string[], static: "Action/Drama/Sports"
+      const rawGenres = Array.isArray(movie.genre)
+        ? movie.genre
+        : typeof movie.genre === 'string'
+          ? movie.genre.split('/')
+          : []
+      const movieGenres = rawGenres.map((g) => g.trim().toLowerCase())
       const genreMatch =
-        !hasGenre ||
-        genres.some((genre) => movieGenres.includes(genre.toLowerCase()))
+        !hasGenre || genres.some((genre) => movieGenres.includes(genre.toLowerCase()))
 
       // ── Format ────────────────────────────────────────────────────────────
-      // movie.format is an array like ["2D","IMAX"] — not in allMovies yet,
-      // so treat a missing field as "matches all formats" to avoid hiding movies.
-      const movieFormats = Array.isArray(movie.format)
-        ? movie.format.map((f) => f.trim().toLowerCase())
-        : []
+      const rawFormats = Array.isArray(movie.format)
+        ? movie.format
+        : typeof movie.format === 'string'
+          ? [movie.format]
+          : []
+      const movieFormats = rawFormats.map((f) => f.trim().toLowerCase())
       const formatMatch =
         !hasFormat ||
         movieFormats.length === 0 ||
@@ -49,9 +80,7 @@ const Movies = () => {
 
       return languageMatch && genreMatch && formatMatch
     })
-
-    setFilteredMovies(result)
-  }
+  }, [baseMovies, activeFilters])
 
   return (
     <div>

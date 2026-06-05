@@ -11,6 +11,8 @@ export interface IShow{
    priceMap:Record<string,number>;
    seatLayout:{
       row:string;
+      type:"NORMAL" | "EXECUTIVE" | "PREMIUM" | "RECLINER";
+      price:number;
       seats:{
          number:number;
          status:"AVAILABLE"| "BOOKED" | "BLOCKED"

@@ -5,6 +5,7 @@ import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
 import { LocationProvider } from "./context/locationContext.jsx";
 import { AuthProvider } from "./context/authContext.jsx";
+import { SeatProvider } from "./context/SeatContext.jsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const queryClient = new QueryClient({
@@ -24,7 +25,9 @@ createRoot(container).render(
       <BrowserRouter>
         <AuthProvider>
           <LocationProvider>
-            <App />
+            <SeatProvider>
+              <App />
+            </SeatProvider>
           </LocationProvider>
         </AuthProvider>
       </BrowserRouter>

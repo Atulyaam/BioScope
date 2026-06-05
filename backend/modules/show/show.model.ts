@@ -1,6 +1,5 @@
 import mongoose, { Schema } from "mongoose";
 import { IShow } from "./show.interface";
-import { string } from "zod";
 
 const showSchema = new Schema<IShow>({
    movie:{

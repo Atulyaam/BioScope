@@ -1,5 +1,5 @@
 import m4 from "../assets/m4.avif";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { filters } from "../utils/constant";
 import TheaterTimings from "../components/Movies/TheaterTimings";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
@@ -28,6 +28,13 @@ const formatReleaseDate = (dateString) => {
 
 const MovieDetail = () => {
   const { id } = useParams();
+  const [activeFilters, setActiveFilters] = useState([]);
+
+  const toggleFilter = (filter) => {
+    setActiveFilters((prev) =>
+      prev.includes(filter) ? prev.filter((f) => f !== filter) : [...prev, filter]
+    );
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -52,6 +59,11 @@ const MovieDetail = () => {
 
   const movie = movieResponse?.data?.movie ?? fallbackMovie;
   const poster = movie.posterUrl || movie.img;
+
+  // ✅ Use the real MongoDB _id from the API response for show queries.
+  // The route :id param could be a numeric/fake id from static data.
+  const movieId = movie._id || movie.id || id;
+
   const movieFormats = (Array.isArray(movie.format) ? movie.format : [])
     .map((item) => String(item).trim())
     .filter(Boolean);
@@ -69,7 +81,6 @@ const MovieDetail = () => {
     : typeof movie.genre === "string"
       ? movie.genre.split("/")
       : [];
-  const movieId = movie._id || movie.id || id;
 
   if (isLoading && !movieResponse?.data?.movie) {
     return (
@@ -165,19 +176,39 @@ const MovieDetail = () => {
       <div className="max-w-7xl mx-auto mt-8">
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-2 mb-2">
-          {filters.map((filter, i) => (
+          {filters.map((filter, i) => {
+            const isActive = activeFilters.includes(filter);
+            return (
+              <button
+                key={i}
+                onClick={() => toggleFilter(filter)}
+                className={`
+                  border px-5 py-1 rounded-lg cursor-pointer text-sm font-medium
+                  transition-all duration-150 select-none
+                  active:scale-95
+                  ${
+                    isActive
+                      ? "bg-[#f74362] text-white border-[#f74362] shadow-inner active:brightness-90"
+                      : "border-gray-300 text-gray-700 bg-white hover:bg-[#f74362] hover:text-white hover:border-[#f74362]"
+                  }
+                `}
+              >
+                {filter}
+              </button>
+            );
+          })}
+          {activeFilters.length > 0 && (
             <button
-              className="border border-gray-300 px-5 py-1 rounded-lg cursor-pointer text-m hover:bg-[#f74362]"
-              key={i}
+              onClick={() => setActiveFilters([])}
+              className="text-xs text-gray-400 underline cursor-pointer ml-1 hover:text-[#f74362] transition-colors duration-150"
             >
-              {filter}
+              Clear all
             </button>
-          ))}
+          )}
         </div>
-        <hr className="my-2 border-gray-200" />
 
         {/* Theater timings */}
-        <TheaterTimings movieId={id} location={location}/>
+        <TheaterTimings movieId={movieId} activeFilters={activeFilters} />
       </div>
     </>
   );
