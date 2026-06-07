@@ -3,29 +3,29 @@ import Footer from "../components/seatLayout/Footer";
 import { useParams } from "react-router-dom";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { getShowById } from "../apis/index";
-import screenImg from "../assets/screen.png"; 
+import screenImg from "../assets/screen.png";
 import { useSeatContext } from "../context/SeatContext";
 import { useLocation } from "../context/LocationContext";
 import { socket } from "../utils/socket";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
-const Seat = ({ seat, row, type, selectedSeats, lockedSeats , onClick }) => {
+const Seat = ({ seat, row, type, selectedSeats, lockedSeats, onClick }) => {
   const seatId = `${type}-${row}${seat.number}`; // Include type to make unique
   const isLocked = lockedSeats?.includes(seatId);
   const isSelected = selectedSeats.includes(seatId);
 
   return (
     <button
-      className={`w-9 h-9 m-[2px] rounded-lg border text-sm
+      className={`w-9 h-9 m-0.5 rounded-lg border text-sm
         ${
           seat.status === "occupied"
             ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
             : isLocked
-            ? "bg-gray-200 border-gray-300 text-gray-400 cursor-not-allowed"
-            : isSelected
-            ? "bg-[#6e52fa] text-white border-[#cec4f7] border-3 cursor-pointer"
-            : "hover:bg-gray-100 border-black cursor-pointer"
+              ? "bg-gray-200 border-gray-300 text-gray-400 cursor-not-allowed"
+              : isSelected
+                ? "bg-[#6e52fa] text-white border-[#cec4f7] border-3 cursor-pointer"
+                : "hover:bg-gray-100 border-black cursor-pointer"
         }`}
       disabled={seat.status === "occupied" || isLocked}
       onClick={onClick}
@@ -46,7 +46,7 @@ const SeatLayout = () => {
     setSelectedSeats((prev) =>
       prev.includes(seatId)
         ? prev.filter((existingId) => existingId !== seatId)
-        : [...prev, seatId]
+        : [...prev, seatId],
     );
   };
 
@@ -63,17 +63,18 @@ const SeatLayout = () => {
   // Calculate total price based on selected seats
   const totalPrice = selectedSeats.reduce((sum, seatId) => {
     if (!showData?.seatLayout) return sum;
-    
+
     // Extract type and row from seatId (e.g., "Executive-A1" -> type="Executive", row="A")
-    const [type, rowAndNumber] = seatId.split('-');
+    const [type, rowAndNumber] = seatId.split("-");
     const row = rowAndNumber?.charAt(0);
-    
-    const rowData = showData.seatLayout.find((r) => r.row === row && r.type === type);
+
+    const rowData = showData.seatLayout.find(
+      (r) => r.row === row && r.type === type,
+    );
     return sum + (rowData?.price || 0);
   }, 0);
 
   const isSelectedSeats = selectedSeats.length > 0;
-
 
   /* Socket.io Code start  */
 
@@ -96,10 +97,8 @@ const SeatLayout = () => {
       setLockedSeats((prev) => prev.filter((id) => !seatIds.includes(id)));
     });
 
-    socket.on("seat-locked-failed", ({ requested: seatIds, alreadyLocked }) => {
-      toast.error(
-        `Some seats are already locked: ${alreadyLocked.join(", ")}`
-      );
+    socket.on("seat-locked-failed", ({ alreadyLocked }) => {
+      toast.error(`Some seats are already locked: ${alreadyLocked.join(", ")}`);
     });
 
     return () => {
@@ -110,18 +109,15 @@ const SeatLayout = () => {
     };
   }, [showId, setSelectedSeats]);
 
-
   console.log("lockedseats: ", lockedSeats);
 
-
   /* Socket.io Code ends */
-
 
   return (
     <>
       <div className="flex flex-col h-screen overflow-hidden">
         {/* Fixed Header */}
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <Header showData={showData} />
         </div>
 
@@ -137,7 +133,7 @@ const SeatLayout = () => {
                         acc[curr.type] = { price: curr.price, rows: [] };
                       acc[curr.type].rows.push(curr);
                       return acc;
-                    }, {})
+                    }, {}),
                   ).map(([type, { price, rows }]) => (
                     <div
                       key={type}
@@ -162,7 +158,11 @@ const SeatLayout = () => {
                                   selectedSeats={selectedSeats}
                                   lockedSeats={lockedSeats}
                                   onClick={() =>
-                                    handleSelectSeat(type, rowObj.row, seat.number)
+                                    handleSelectSeat(
+                                      type,
+                                      rowObj.row,
+                                      seat.number,
+                                    )
                                   }
                                 />
                               ))}
@@ -179,7 +179,7 @@ const SeatLayout = () => {
                 <img
                   src={screenImg}
                   alt="Screen"
-                  className="w-[300px] md:w-[400px] object-contain opacity-80"
+                  className="w-75 md:w-100 object-contain opacity-80"
                 />
               </div>
             </div>
@@ -187,7 +187,7 @@ const SeatLayout = () => {
         </div>
 
         {/* Fixed Footer */}
-        <div className="flex-shrink-0 border-t border-gray-200">
+        <div className="shrink-0 border-t border-gray-200">
           <Footer
             isSelected={isSelectedSeats}
             selectedSeats={selectedSeats}

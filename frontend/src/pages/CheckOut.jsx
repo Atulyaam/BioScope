@@ -1,75 +1,193 @@
-import Header from "../components/seatLayout/Header";
+import { useEffect, useState } from "react";
+import Header from "../components/seat-layout/Header";
+import dayjs from "dayjs";
+import { calculateTotalPrice, groupSeatsByType } from "../utils";
+import { FaInfoCircle } from "react-icons/fa";
+import { BiSolidOffer } from "react-icons/bi";
+import { CiCircleQuestion, CiUser } from "react-icons/ci";
+import { useAuth } from "../context/AuthContext";
+import { useLocation } from "../context/LocationContext";
+import { useSeatContext } from "../context/SeatContext";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { socket } from "../utils/socket";
 
-export default function CheckOut(){
-    // mocke data
-    const shows= {
-        _id:"movie123",
-        date:"20-06-20260",
-        startTime:"10:30 PM",
-        movie:{
-            title:"Intersteller",
-            certification:"U/A",
-            language:["Hindi","English"],
-            formate:["2D","IMAX"],
-            poterUrl:"https://www.bing.com/ck/a?!&&p=26b5776a7f5cd0c1042ede245d532ec8c25cf322be3143fcb26be35bf9266492JmltdHM9MTc4MDQ0NDgwMA&ptn=3&ver=2&hsh=4&fclid=0af88bde-4166-60f4-2c6d-987e401161b9&u=a1L2ltYWdlcy9zZWFyY2g_cT1pbnRlcnN0ZWxsYXIrcG9zdGVyJmlkPTY5OTREQUFFOEE1NzU3MzE5MUExOUU0MkExOUYzQjY1ODc3MkZEOUYmRk9STT1JQUNGSVI"
-        },
-        theater:{
-            name:"PVR",
-            city:"mumbai",
-            state:"maharashatra", 
+const Checkout = () => {
+  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes = 300 seconds
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { location } = useLocation();
+  const { selectedSeats, shows: showData } = useSeatContext();
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+
+          socket.emit("unlock-seats", {
+            showId: showData._id,
+            userId: user._id,
+          });
+
+          toast.error("Time expired!");
+          navigate("/");
+
+          return 0;
         }
+
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval); // cleanup
+  }, [navigate, showData?._id, user?._id]);
+  const { base, tax, total } = calculateTotalPrice(selectedSeats);
+
+  useEffect(() => {
+    if (!showData || selectedSeats.length === 0) {
+      navigate("/");
     }
+  }, [navigate, selectedSeats.length, showData]);
 
-    const selectedSeats = [
-        {type:"Gold",seatNumber:"85",price:250},
-        {type:"Gold",seatNumber:"86",price:250}
-    ]
-    return(
-       <div className="min-h-screen w-full bg-white">
-        <Header type="checkout"></Header>
-        <div className="max-w-full mx-auto px-4 py-6">
-            <div className=" flex flex-col lg:flex-row gap-6">
-                {/* Left Section */}
-                <div className="flex-1 space-y-4">
-                    {/* Movie detail */}
-                    <div className="flex gap-4">
-                        <img src={shows.movie.poterUrl} alt={shows.movie.title} className="w-[60px] h-[90px] rounded object-cover" />
-                        <div>
-                            <h3 className="font-semibold text-lg">{shows.movie.title}</h3>
-                            <p className="text-sm text-gray-600">
-                                {shows.movie.certification}, {shows.movie.language.join(" ,")}, {" "},
-                                {shows.movie.formate.join(" ,")}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                                {shows.theater.name},{shows.theater.city},(" "),{
-                                    shows.theater.state.toUpperCase()
-                                }
+  return (
+    <div className="min-h-screen w-full bg-white">
+      <Header type="checkout" />
 
-                            </p>
-                        </div>
-                    </div>
-                    {/* Show details */}
-                    <div className="border border-gray-200 rounded-[24px] px-6 py-5 ">
-                        <p className="text-md font-medium border-b pb-5 border-gray-200">
-                            {
-                                dayjs(shows.date,"DD-MM-YYYY").format("D MMMM YYYY").split(" ").slice(0,2).join(" ")
-                            }&nbsp;
-                            <span className="font-semibold">{shows.startTime}</span>
-
-                        </p>
-
-                        <div className="flex items-center justify-between mt-4 mb-4">
-
-                        </div>
-
-                    </div>
-
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        <p className="text-red-500 text-center mb-3 text-lg border rounded-[14px] border-dashed py-2 font-semibold">
+          Time left: {String(Math.floor(timeLeft / 60)).padStart(2, "0")}:
+          {String(timeLeft % 60).padStart(2, "0")}
+        </p>
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Left Section */}
+          <div className="flex-1 space-y-4">
+            {/* Movie Details */}
+            <div className="flex gap-4">
+              <img
+                src={showData?.movie.posterUrl}
+                alt={showData?.movie.title}
+                className="w-15 h-22.5 rounded object-cover"
+              />
+              <div>
+                <h3 className="font-semibold text-lg">
+                  {showData?.movie.title}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  {showData?.movie.certification} •{" "}
+                  {showData?.movie.languages.join(", ")} •{" "}
+                  {showData?.movie.format.join(", ")}
+                </p>
+                <p className="text-sm text-gray-600">
+                  {showData?.theater.name}, {showData?.theater.city},{" "}
+                  {showData?.theater.state}
+                </p>
+              </div>
+            </div>
+            {/* Show Details */}
+            <div className="border border-gray-200 rounded-3xl px-6 py-5">
+              <p className="text-md font-medium border-b pb-5 border-gray-200">
+                {dayjs(showData?.date, "DD-MM-YYYY")
+                  .format("D MMMM YYYY")
+                  .split(" ")
+                  .slice(0, 2)
+                  .join(" ")}{" "}
+                &nbsp;•{" "}
+                <span className="font-semibold">{showData?.startTime}</span>
+              </p>
+              <div className="flex items-center justify-between mt-4 mb-4">
+                <div>
+                  <p className="text-md mt-2 font-semibold">
+                    {selectedSeats.length} ticket
+                  </p>
+                  <div className="text-sm text-gray-500">
+                    <span className="font-medium">
+                      {groupSeatsByType(selectedSeats).map(
+                        ({ type, seats }) => (
+                          <p key={type} className="font-medium">
+                            {type} - {seats.join(", ")}
+                          </p>
+                        ),
+                      )}
+                    </span>
+                  </div>
                 </div>
-
+                <p className="text-md font-semibold mt-2">
+                  <span className="text-gray-700">₹</span>
+                  {base}
+                </p>
+              </div>
             </div>
 
-        </div>
+            {/* Cancellation Notice */}
+            <div className="bg-white border rounded-3xl border-gray-200 text-yellow-800 text-sm px-6 py-5 tracking-wide">
+              <span className="font-medium flex items-center gap-2">
+                <FaInfoCircle size={24} /> No cancellation or refund available
+                after payment.
+              </span>
+            </div>
 
-       </div>
-    )
-}
+            {/* Offers */}
+            <div className="flex items-center justify-between border rounded-3xl border-gray-200 px-6 py-5">
+              <p className="font-medium text-sm flex items-center gap-2">
+                <BiSolidOffer size={20} /> Available Offers
+              </p>
+              <p className="text-sm text-center text-blue-600 font-medium cursor-pointer">
+                View all offers
+              </p>
+            </div>
+          </div>
+
+          {/* Right Section */}
+          <div className="w-full lg:w-75 space-y-4">
+            <h4 className="font-medium text-gray-900 text-lg">
+              Payment Summary
+            </h4>
+            <div className="border border-gray-200 rounded-3xl px-6 py-7 space-y-2">
+              <div className="flex justify-between text-md">
+                <span className="text-sm text-gray-500">Order amount</span>
+                <span>₹{base}</span>
+              </div>
+              <div className="flex justify-between text-md pb-4">
+                <span className="font-semibold text-sm">Taxes & fees (5%)</span>
+                <span>₹{tax}</span>
+              </div>
+              <div className="flex justify-between text-md font-semibold border-t border-gray-200 pt-4">
+                <span>To be paid</span>
+                <span>₹{total}</span>
+              </div>
+            </div>
+
+            {/* User details */}
+            <h4 className="text-lg font-medium">Your details</h4>
+            <div className="border flex items-start gap-3 border-gray-200 rounded-3xl px-6 py-7">
+              <CiUser size={24} />
+              <div className="-mt-1">
+                <p className="text-sm font-medium">{user.name}</p>
+                <p className="text-sm text-gray-600">+91-{user?.phone}</p>
+                <p className="text-sm text-gray-600">{user?.email}</p>
+                <p className="text-sm text-gray-600">{location}</p>
+              </div>
+            </div>
+
+            {/* Terms and button */}
+            <div className="border border-gray-200 rounded-3xl px-6 py-5">
+              <p className="text-sm font-medium cursor-pointer flex items-center gap-2">
+                <CiCircleQuestion size={24} /> Terms and conditions
+              </p>
+            </div>
+
+            <div className="flex justify-between items-center bg-black rounded-3xl px-6 py-4 cursor-pointer">
+              <p className="text-white font-bold">
+                ₹{total} <span className="text-xs font-medium">TOTAL</span>
+              </p>
+              <p className="text-white font-medium">Proceed To Pay</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Checkout;
