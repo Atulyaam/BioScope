@@ -31,3 +31,10 @@ export const activateUser = async (
   }
   return updatedUser;
 };
+
+
+// get user by email 
+
+export const getUserByEmail = async (email:string):Promise<IUser | null>=>{
+  return await UserModel.findOne({email});
+}
