@@ -1,7 +1,10 @@
 import { FaSearch } from "react-icons/fa";
 import FullLogo from "../../assets/FullLogo.png";
 import { useState } from "react";
-import { useLocation as useRouterLocation, useNavigate } from "react-router-dom";
+import {
+  useLocation as useRouterLocation,
+  useNavigate,
+} from "react-router-dom";
 import { useLocation } from "../../hooks/useLocation";
 
 import pinIcon from "../../assets/pin.gif";
@@ -89,7 +92,10 @@ const Header = () => {
               </div>
 
               {/* Sign In Button */}
-              <button className="bg-[#f84464] hover:bg-[#e63a54] text-white px-6 py-2.5 rounded-lg text-sm font-semibold cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md active:scale-95">
+              <button
+                onClick={() => navigate("/auth")}
+                className="bg-[#f84464] hover:bg-[#e63a54] text-white px-6 py-2.5 rounded-lg text-sm font-semibold cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
+              >
                 Sign In
               </button>
             </div>

@@ -1,26 +1,31 @@
 import { Route, Routes, useMatch } from "react-router-dom";
 import Header from "./components/shared/Header";
 import Footer from "./components/shared/Footer";
-import Home from "./pages/Home.jsx"
+import Home from "./pages/Home.jsx";
 import Movies from "./pages/Movies.jsx";
 import MovieDetail from "./pages/MovieDetail.jsx";
 import Profile from "./pages/Profile.jsx";
 import SeatLayout from "./pages/SeatLayout.jsx";
 import CheckOut from "./pages/checkOut.jsx";
+import AuthFlow from "./components/auth/AuthFlow.jsx";
 
 function App() {
   const seatLayoutPage = useMatch(
-    "/movies/:movieId/:movieName/:state/theater/:theaterId/shows/:showId/seat-layout"
-  )
+    "/movies/:movieId/:movieName/:state/theater/:theaterId/shows/:showId/seat-layout",
+  );
 
   const isCheckout = useMatch("/shows/:showId/:state/checkout");
+  const isAuthPage = useMatch("/auth");
+
   return (
     <>
       <div className="flex flex-col min-h-screen">
-        {!seatLayoutPage && !isCheckout && <Header></Header>}
+        {!seatLayoutPage && !isCheckout && !isAuthPage && <Header></Header>}
         <main className="grow">
           <Routes>
             <Route path="/" element={<Home />} />
+
+            <Route path="/auth" element={<AuthFlow></AuthFlow>}></Route>
 
             <Route path="/profile/:id" element={<h1>profile page</h1>}></Route>
 
@@ -39,10 +44,12 @@ function App() {
               element={<SeatLayout></SeatLayout>}
             ></Route>
 
-            <Route path="/shows/:showId/:state/checkout" element={<CheckOut></CheckOut>}></Route>
+            <Route
+              path="/shows/:showId/:state/checkout"
+              element={<CheckOut></CheckOut>}
+            ></Route>
           </Routes>
-          {!seatLayoutPage && !isCheckout && <Footer></Footer>}
-          
+          {!seatLayoutPage && !isCheckout && !isAuthPage && <Footer></Footer>}
         </main>
       </div>
     </>

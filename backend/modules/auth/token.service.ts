@@ -1,12 +1,14 @@
 // generate accesstoken and refresh token 
 
-import jwt, {JwtPayload} from "jsonwebtoken";
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const jwt: any = require("jsonwebtoken");
+type JwtPayload = Record<string, unknown>;
 import { ITokenPayload } from "./auth.interface";
 import { config } from "../../config/config";
 import { RefreshTokenModel } from "./refresh.model";
 
 // generate refresh and access tokens
-export const generateToken = async(payload:ITokenPayload): {accessToken:string,refreshToken:string} =>{
+export const generateToken = async(payload:ITokenPayload): Promise<{accessToken:string,refreshToken:string}> =>{
    const accessToken = jwt.sign(payload,config.accessTokenSecret,{expiresIn:"1h"});
    const refreshToken = jwt.sign(payload,config.refreshTokenSecret, {expiresIn:"7d"});
    return {accessToken,refreshToken};

@@ -63,3 +63,5 @@ export const getAllMovies = () => {
 export const getShowById = (id) => {
   return axiosInstance.get(`/shows/${id}`);
 };
+
+export default axiosInstance;

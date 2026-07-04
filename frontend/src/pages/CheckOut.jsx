@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Header from "../components/seat-layout/Header";
+import Header from "../components/seatLayout/Header";
 import dayjs from "dayjs";
 import { calculateTotalPrice, groupSeatsByType } from "../utils";
 import { FaInfoCircle } from "react-icons/fa";
